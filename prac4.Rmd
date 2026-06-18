@@ -1,0 +1,5 @@
+Exercise for practical 4 - adding Rmd document in cloned folder
+
+
+new command line calls in this prac:
+

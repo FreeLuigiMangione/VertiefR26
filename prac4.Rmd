@@ -3,3 +3,66 @@ Exercise for practical 4 - adding Rmd document in cloned folder
 
 new command line calls in this prac:
 
+##Checking git user config:
+
+git config --global user.name
+git config --global user.email
+git remote -v       # is a GitHub remote configured?
+
+ssh -T git@github.com
+
+A successful response looks like:
+Hi YOUR-USERNAME! You've successfully authenticated, but GitHub does not provide shell access.
+
+
+
+##What git currently sees, log of commits
+
+git status          # files git sees
+git log --oneline           # one line per commit
+git log --oneline --graph   # with branch graph
+git log -- myfile.qmd       # commits that touched one file
+
+
+
+
+##Workflow : stage - commit - push - fetch/ pull
+
+git add example.Rmd
+git commit -m "add example.Rmd"
+git push
+
+git pull       # instantly fetches and merges changes from git repo in one go
+
+git fetch origin
+
+git log HEAD..origin/main --oneline   # commits on remote that you don't have yet
+git diff HEAD origin/main             # line-by-line diff between your local and remote
+
+git merge origin/main
+
+
+
+
+##To inspect a specific commit:
+
+git show <hash>                  # full diff for that commit
+git show <hash>:practical3.qmd  # the file as it was at that commit
+
+
+
+##Restore a past version of the file
+
+git checkout <hash> -- practical3.qmd   # use the hash of the commit BEFORE the break
+
+# This stages the restored file automatically — you can see this with git status. Commit it:
+
+git commit -m "restore practical3.qmd to pre-break version"
+
+
+
+
+
+nano .gitignore       # opens it for editing in the terminal
+
+

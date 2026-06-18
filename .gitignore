@@ -1,0 +1,15 @@
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+
+/_site/
+/.quarto/
+*_files/
+
+.DS_Store
+Thumbs.db
+
+group_statsoft2/
+

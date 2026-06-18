@@ -1,0 +1,91 @@
+---
+title: "prac2"
+output: html_document
+---
+
+## Exercise 1
+
+1.  
+
+f1 could be named identify_prefix or extract_prefix
+
+f3 shorten_prefix
+
+```{r}
+?rep
+```
+
+2.  Because it makes it clear that norm_r , norm_d belong to the normal distribution, doing 2 different things with it. Also helps when typing norm..., already suggests different functions to choose
+
+```{r}
+?rnorm
+```
+
+#Exercise 2
+
+1.make function
+
+og code
+
+```{r}
+library(palmerpenguins)
+library(tidyverse)
+
+penguins %>%
+  filter(species == "Adelie") %>%
+  ggplot(aes(x = bill_length_mm, y = bill_depth_mm)) +
+  geom_point() +
+  labs(title = "Bill Length vs. Bill Depth for Adelie Penguins",
+       x = "Bill Length (mm)",
+       y = "Bill Depth (mm)")
+```
+
+function code
+
+```{r}
+plot_2features_of_1species <- function (df, target_species, feat_x, feat_y){
+  
+  df_species <- df %>%
+    filter(species == target_species)
+  
+  plot_species <- ggplot(data = df_species,
+         aes_string(x = feat_x, y = feat_y)) +
+  geom_point() +
+  labs(title = paste(target_species, ":", feat_x, "vs", feat_y),
+       x = feat_x,
+       y = feat_y)
+  
+  return(plot_species)
+}
+
+
+plot_2features_of_1species(penguins, "Adelie", "bill_length_mm", "body_mass_g")
+
+penguins
+
+```
+2. add docstring 
+
+```{r}
+plot_2features_of_1species <- function (df, target_species, feat_x, feat_y){
+  
+  #@param df The data frame used for the function, it must include a column called "species" and 2 other columns, at least 1 of which containing numeric data
+  
+  #@param target_species A variable that is present in the column "species"
+  
+  #@param 
+  
+  df_species <- df %>%
+    filter(species == target_species)
+  
+  plot_species <- ggplot(data = df_species,
+         aes_string(x = feat_x, y = feat_y)) +
+  geom_point() +
+  labs(title = paste(target_species, ":", feat_x, "vs", feat_y),
+       x = feat_x,
+       y = feat_y)
+  
+  return(plot_species)
+}
+```
+

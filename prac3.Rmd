@@ -1,0 +1,242 @@
+---
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+### Exercise 0 : System prompt
+
+You are helping me with an advanced statistical programming course in R.
+
+Code style: - Use the tidyverse (dplyr, tidyr, ggplot2, purrr) where possible.
+- Use the native pipe \|\> rather than %\>% unless it requires more complicated code.
+- Follow the tidyverse style guide: snake_case, \<- for assignment, two-space indent.
+- Prefer small, pure functions over long scripts.
+- For file paths use the `here` package.
+
+When I ask for help debugging: - First explain what the error message means, in plain English.
+- Then suggest where to look in my code, BEFORE proposing a fix.
+- Only write a full rewrite if I ask for one.
+
+General: - Do not apologise.
+Do not pad with filler.
+If you are uncertain, say so.
+- If I paste in code, assume it is real code I care about — do not silently rename variables or change the pipe style.
+
+### Exercise 1
+
+```{r}
+library(tidyverse)
+```
+
+1.  buggy code:
+
+    ```{r}
+    library(palmerpenguins)
+    library(dplyr)
+
+    mean_mass_by <- function(data, group_var) {
+      data |>
+        group_by(group_var) |>
+        summarise(mean_mass = mean(body_mass_g, na.rm = TRUE))
+    }
+
+    mean_mass_by(penguins, species)
+    ```
+
+2.  The intention of the function is probably to give out a vector of the mean mass of a number of subgroups created by a categorical variable.
+
+    Possible bugs may be that the group_by() doesn t count since there is no return given and therefore only the last calculation might be done
+
+    or that there have to be "" somewhere
+
+3.  full error message :
+
+    Error in \`group_by()\`: !
+    Must group by variables found in \`.data\`.
+    ✖ Column \`group_var\` is not found.
+    Backtrace:
+
+    1.  global mean_mass_by(penguins, species)
+    2.  dplyr:::group_by.data.frame(data, group_var)
+
+4.  Asking LLM about error message, template :
+
+    Here is my code: `[code]`.
+    Here is the error: `[error]`.
+    Please explain what R is complaining about, and point me to the line where the problem originates.
+    Do not rewrite my code yet.
+
+    Answer:
+
+    R is complaining that `group_by()` is looking for a column literally named `group_var`, and it cannot find one in `data`.
+
+    In plain English:
+
+    -   Inside your function, `group_var` is a function argument.
+
+    -   But `dplyr::group_by()` is interpreting `group_var` as a column name in the data frame.
+
+    -   Your `penguins` data has a column called `species`, not a column called `group_var`.
+
+    -   So `group_by()` throws:
+
+    > Must group by variables found in `.data`\
+    > Column `group_var` is not found.
+
+    Where the problem originates:
+
+    -   The key line is inside your function:
+
+    ```         
+    data |> group_by(group_var) 
+    ```
+
+    That is the line causing the error.
+
+    Why the backtrace points there:
+
+    -   The call `mean_mass_by(penguins, species)` goes into your function.
+
+    -   Then `group_by(group_var)` runs.
+
+    -   `group_by()` searches the data for a column named `group_var`.
+
+    -   It does not find one, so it errors.
+
+    One more thing to notice:
+
+    -   In the code you first pasted, you wrote `mean_mass_by(penguins, gruspecies)`, which would also be a problem because `gruspecies` is not a valid column name.
+
+    -   But the actual error/backtrace shows the call was `mean_mass_by(penguins, species)`.
+
+    -   So the real issue is not the column `species`; it is that the function is not passing that argument into `group_by()` in the way `dplyr` expects.
+
+    So: start by looking at the `group_by(group_var)` line inside `mean_mass_by()`.
+    That is where the mismatch begins.
+
+5.  Fix the code yourself you lazy dog!
+
+    ```{r}
+
+    #curly brackets {{}} around the variable inside the calculation makes it a variable in r and not just a string
+
+
+    mean_mass_by <- function(data, group_var) {
+      
+     
+      data |>
+        group_by({{group_var}}) |>
+        summarise(mean_mass = mean(body_mass_g, na.rm = TRUE))
+    }
+
+    mean_mass_by(penguins, species)
+
+
+    ```
+
+### Exercise 2: Locating errors
+
+1.  buggy code:
+
+    ```{r}
+    #library(palmerpenguins)
+    #library(dplyr)
+     
+    summarise_species <- function(data) {
+      data |>
+        group_by(species) |>
+        summarise(mean_mass = mean_body_mass(body_mass_g))
+    }
+     
+    mean_body_mass <- function(x) {
+      mean(x, na.rm = TRUE)   # error was here - typo TREU instead of TRUE
+    }
+     
+    summarise_species(penguins)
+    ```
+
+2.  ggg
+
+3.  locate error with rlang::last_trace()
+
+    ```{r}
+    rlang::last_trace()
+    ```
+
+4.  put another wrong value
+
+```{r}
+summarise_species <- function(data) {
+  data |>
+    group_by(species) |>
+    summarise(mean_mass = mean_body_mass(body_mass_g))
+}
+ 
+mean_body_mass <- function(x) {
+  mean(x, na.rm = banana)   
+}
+ 
+summarise_species(penguins)
+```
+
+5.  fix it with TRUE
+
+### Exercise 3: browser()
+
+1\.
+
+```{r}
+my_factorial <- function(n) {
+  
+  stopifnot (n >= 0, n == as.integer(n))
+  if (n <= 1) return (1)
+  return (n*my_factorial(n - 1))
+}
+
+my_factorial(0)   
+
+
+```
+
+```{r}
+
+my_factorial <- function(n) {
+  stopifnot (n >= 0, n == as.integer(n)) 
+  if (n <= 1) return(1)
+  return(n * my_factorial(n - 1))
+}
+
+my_factorial(0)
+```
+
+### exercise 4: debug () , debugonce()
+
+```{r}
+standardise <- function(x) {
+  (x - mean(x, na.rm = T)) / sd(x, na.rm = T)
+}
+
+standardise(c(1, 2, 3, 4, 5))   # fine
+standardise
+
+
+
+
+)  # returns all NAs — why?
+
+
+
+
+
+```
+
+1\.
+
+2\.
+mean and sd return NA if one value is NA
+
+3\.
+I would use debugonce() if I already have a good idea what the problem is and debug if I want to keep looking at the function longer
+
+### ex 5: debugging quarto
